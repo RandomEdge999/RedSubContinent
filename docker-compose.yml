@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with PostGIS
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: redsubcontinent-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-redsubcontinent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-redsubcontinent}
+      POSTGRES_DB: ${POSTGRES_DB:-redsubcontinent}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redsubcontinent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: redsubcontinent-api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-redsubcontinent}:${POSTGRES_PASSWORD:-redsubcontinent}@db:5432/${POSTGRES_DB:-redsubcontinent}
+      API_DEBUG: ${API_DEBUG:-true}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Next.js Frontend
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: redsubcontinent-web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    command: npm run dev
+
+volumes:
+  postgres_data:

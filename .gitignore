@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Next.js
+.next/
+out/
+
+# Python
+*.so
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database
+*.db
+*.sqlite3
+
+# ETL data (keep structure, ignore large files)
+etl/data/raw/*
+!etl/data/raw/.gitkeep
+etl/data/processed/*
+!etl/data/processed/.gitkeep
+
+# Docker
+*.tar
+
+# Misc
+*.bak
+*.tmp
+.cache/
