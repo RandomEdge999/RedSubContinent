@@ -13,52 +13,51 @@ import ImageWithFallback from "../ImageWithFallback";
 import { getTimeline, getStatsSummary } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
 
-// High quality reliable images from Wikimedia Commons
 const CHAPTER_IMAGES = [
     {
         id: "intro",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/South_Asia_%28orthographic_projection%29.svg/600px-South_Asia_%28orthographic_projection%29.svg.png",
-        alt: "South Asia Map"
+        url: "/images/story-a.jpg",
+        alt: "Historic archway at dusk"
     },
     {
         id: "invasions",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Ghaznavid_Empire_997_-_1030_%28CE%29.png/800px-Ghaznavid_Empire_997_-_1030_%28CE%29.png",
-        alt: "Ghaznavid Empire"
+        url: "/images/story-b.jpg",
+        alt: "Landscape with distant fort"
     },
     {
         id: "sultanate",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Qutub_Minar_in_Delhi.jpg/800px-Qutub_Minar_in_Delhi.jpg",
-        alt: "Qutub Minar"
+        url: "/images/story-c.jpg",
+        alt: "Red sandstone detail"
     },
     {
         id: "mughals",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Mughal_Historical_Map.png/800px-Mughal_Historical_Map.png",
-        alt: "Mughal Empire Map"
+        url: "/images/story-1.svg",
+        alt: "Mughal motif"
     },
     {
         id: "marathas",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Indian_Rebellion_of_1857.png/800px-Indian_Rebellion_of_1857.png",
-        alt: "Maratha Confederacy"
+        url: "/images/story-1.svg",
+        alt: "Maratha motif"
     },
     {
         id: "company",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/British_Indian_Empire_1909_Imperial_Gazetteer_of_India.jpg/1024px-British_Indian_Empire_1909_Imperial_Gazetteer_of_India.jpg",
-        alt: "British India Map"
+        url: "/images/story-1.svg",
+        alt: "Company rule motif"
     },
     {
         id: "raj",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/1943_Famine.jpg/440px-1943_Famine.jpg",
-        alt: "Bengal Famine"
+        url: "/images/story-1.svg",
+        alt: "Raj motif"
     },
     {
         id: "partition",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Partition_of_India_1947_en.svg/560px-Partition_of_India_1947_en.svg.png",
-        alt: "Partition Map"
+        url: "/images/story-1.svg",
+        alt: "Partition motif"
     },
     {
         id: "modern",
-        url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/India_Gate_in_New_Delhi_03-2016.jpg/1024px-India_Gate_in_New_Delhi_03-2016.jpg",
-        alt: "India Gate"
+        url: "/images/story-1.svg",
+        alt: "Modern era motif"
     },
 ];
 
@@ -134,12 +133,12 @@ export function StoryContainer() {
     const containerRef = useRef<HTMLDivElement>(null);
     const chapterRefs = useRef<(HTMLElement | null)[]>([]);
 
-    const { data: stats } = useQuery({
+    const { data: stats, isError: statsError } = useQuery({
         queryKey: ["stats-summary"],
         queryFn: getStatsSummary,
     });
 
-    const { data: timeline } = useQuery({
+    const { data: timeline, isError: timelineError } = useQuery({
         queryKey: ["timeline-century"],
         queryFn: () => getTimeline(1000, 2024, "century"),
     });
@@ -242,7 +241,7 @@ export function StoryContainer() {
                         Years
                     </motion.h1>
 
-                    {stats && (
+                    {stats && !statsError && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -324,6 +323,8 @@ export function StoryContainer() {
                                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         loading="lazy"
                                         fallbackSrc="/placeholder.png"
+                                        placeholder="blur"
+                                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAGgwJ/l0yoywAAAABJRU5ErkJggg=="
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-[#0a0a0c]/30 pointer-events-none" />
                                 </div>
@@ -350,10 +351,10 @@ export function StoryContainer() {
                 })}
 
                 {/* Timeline visualization */}
-                {timeline && timeline.length > 0 && (
-                    <section className="py-32">
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 mb-4">Data</p>
-                        <h2 className="text-3xl font-light mb-12">Conflicts By Century</h2>
+                    {!timelineError && timeline && timeline.length > 0 && (
+                        <section className="py-32">
+                            <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 mb-4">Data</p>
+                            <h2 className="text-3xl font-light mb-12">Conflicts By Century</h2>
 
                         <div className="flex items-end justify-between gap-3 h-80">
                             {timeline.map((point, index) => {

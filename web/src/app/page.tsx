@@ -11,31 +11,9 @@ import HeroSlideshow from "@/components/hero/HeroSlideshow";
 
 // High-quality historical images for slideshow
 const SLIDESHOW_IMAGES = [
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/South_Asia_%28orthographic_projection%29.svg/800px-South_Asia_%28orthographic_projection%29.svg.png",
-        alt: "South Asia",
-        caption: "The Indian Subcontinent",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Mughal_Historical_Map.png/800px-Mughal_Historical_Map.png",
-        alt: "Mughal Empire",
-        caption: "The Mughal Empire at its zenith",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/British_Indian_Empire_1909_Imperial_Gazetteer_of_India.jpg/1024px-British_Indian_Empire_1909_Imperial_Gazetteer_of_India.jpg",
-        alt: "British India",
-        caption: "British India, 1909",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Partition_of_India_1947_en.svg/560px-Partition_of_India_1947_en.svg.png",
-        alt: "Partition",
-        caption: "The Partition of India, 1947",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/India_Gate_in_New_Delhi_03-2016.jpg/1024px-India_Gate_in_New_Delhi_03-2016.jpg",
-        alt: "India Gate",
-        caption: "India Gate, New Delhi",
-    },
+    { src: "/images/hero-1.svg", alt: "South Asia topography", caption: "The Indian Subcontinent" },
+    { src: "/images/hero-2.svg", alt: "Cinematic crimson gradient", caption: "Empires rise and fall" },
+    { src: "/images/hero-3.svg", alt: "Map grid motif", caption: "Borders and battle lines" },
 ];
 
 export default function HomePage() {

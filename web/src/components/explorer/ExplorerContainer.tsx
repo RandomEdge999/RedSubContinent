@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import MapExplorer from "@/components/MapExplorer";
 
 import { getConflicts, getConflictsGeoJSON, getStatsSummary } from "@/lib/api";
 import {
@@ -13,6 +13,7 @@ import {
     getConflictTypeColor,
 } from "@/lib/utils";
 import type { ConflictType, ConflictFilters, ConflictListItem } from "@/types";
+import { useToast } from "@/components/layout/ToastProvider";
 
 const CONFLICT_TYPES: ConflictType[] = [
     "war", "invasion", "massacre", "riot", "famine",
@@ -20,6 +21,14 @@ const CONFLICT_TYPES: ConflictType[] = [
     "civil_conflict", "communal_violence", "other",
 ];
 
+const MapExplorer = dynamic(() => import("@/components/MapExplorer"), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-full flex items-center justify-center text-white/50">
+            Loading map shell...
+        </div>
+    ),
+});
 export function ExplorerContainer() {
 
     const [mapReady, setMapReady] = useState(false);
@@ -36,20 +45,45 @@ export function ExplorerContainer() {
         conflict_type: selectedTypes.length > 0 ? selectedTypes : undefined,
         search: searchQuery || undefined,
     };
+    const toast = useToast();
 
-    const { data: conflictsData, isLoading: conflictsLoading } = useQuery({
+    const { data: conflictsData, isLoading: conflictsLoading, isError: conflictsError, refetch: refetchConflicts } = useQuery({
         queryKey: ["conflicts", filters],
-        queryFn: () => getConflicts(filters, 1, 100),
+        queryFn: async () => {
+            try {
+                return await getConflicts(filters, 1, 100);
+            } catch (err) {
+                console.error("Conflicts fetch failed", err);
+                toast("Failed to load conflicts", "error");
+                throw err;
+            }
+        },
     });
 
-    const { data: geoJsonData } = useQuery({
+    const { data: geoJsonData, isError: geoError, refetch: refetchGeo } = useQuery({
         queryKey: ["conflicts-geojson", yearStart, yearEnd],
-        queryFn: () => getConflictsGeoJSON(yearStart, yearEnd),
+        queryFn: async () => {
+            try {
+                return await getConflictsGeoJSON(yearStart, yearEnd);
+            } catch (err) {
+                console.error("GeoJSON fetch failed", err);
+                toast("Failed to load map data", "error");
+                throw err;
+            }
+        },
     });
 
-    const { data: stats } = useQuery({
+    const { data: stats, isError: statsError } = useQuery({
         queryKey: ["stats-summary"],
-        queryFn: getStatsSummary,
+        queryFn: async () => {
+            try {
+                return await getStatsSummary();
+            } catch (err) {
+                console.error("Stats fetch failed", err);
+                toast("Failed to load stats", "error");
+                throw err;
+            }
+        },
     });
 
 
@@ -64,6 +98,9 @@ export function ExplorerContainer() {
         <div className="h-screen pt-16 flex bg-[#0a0a0c]">
             {/* Sidebar */}
             <aside className="w-80 flex-shrink-0 border-r border-white/5 flex flex-col">
+                <div className="p-4 border-b border-white/5 bg-[#8b0000]/10 text-white/70 text-xs uppercase tracking-[0.25em]">
+                    Content advisory: includes historical violence, famine, and war.
+                </div>
                 {/* Stats header */}
                 {stats && (
                     <div className="p-6 border-b border-white/5 bg-[#8b0000]/5">
@@ -152,6 +189,16 @@ export function ExplorerContainer() {
                                 </div>
                             ))}
                         </div>
+                    ) : conflictsError ? (
+                        <div className="p-6 text-sm text-white/50 space-y-3">
+                            <p>Failed to load conflicts.</p>
+                            <button
+                                onClick={() => refetchConflicts()}
+                                className="px-3 py-2 border border-white/20 text-xs hover:bg-white/5 transition-colors"
+                            >
+                                Retry
+                            </button>
+                        </div>
                     ) : conflictsData?.items.length === 0 ? (
                         <div className="p-6 text-center text-white/30 text-sm">
                             No conflicts found
@@ -203,12 +250,24 @@ export function ExplorerContainer() {
                 />
 
                 {/* Loading overlay */}
-                {!mapReady && (
+                {(!mapReady || geoError) && (
                     <div className="absolute inset-0 bg-[#0a0a0c] flex items-center justify-center">
-                        <div className="text-center">
-                            <div className="w-8 h-8 border-2 border-[#8b0000] border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
-                            <p className="text-sm text-white/40">Loading map...</p>
-                        </div>
+                        {geoError ? (
+                            <div className="text-center space-y-3">
+                                <p className="text-sm text-white/50">Failed to load map data.</p>
+                                <button
+                                    onClick={() => refetchGeo()}
+                                    className="px-4 py-2 border border-white/20 text-sm text-white hover:bg-white/5 transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <div className="w-8 h-8 border-2 border-[#8b0000] border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
+                                <p className="text-sm text-white/40">Loading map...</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -250,6 +309,7 @@ export function ExplorerContainer() {
                             <button
                                 onClick={() => setSelectedConflict(null)}
                                 className="absolute top-4 right-4 text-white/30 hover:text-white transition-colors"
+                                aria-label="Close conflict details"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

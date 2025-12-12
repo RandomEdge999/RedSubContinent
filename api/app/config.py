@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     # Pagination
     default_page_size: int = 50
     max_page_size: int = 500
+
+    # Monitoring
+    sentry_dsn: Optional[str] = None
+    sentry_environment: Optional[str] = None
+    sentry_release: Optional[str] = None
     
     class Config:
         env_file = ".env"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Map, { NavigationControl, Marker, Popup, Source, Layer } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { getConflictTypeColor, formatNumber } from "@/lib/utils";
@@ -15,6 +15,17 @@ interface MapExplorerProps {
 export default function MapExplorer({ geoJsonData, onSelectConflict, onLoad }: MapExplorerProps) {
     const [popupInfo, setPopupInfo] = useState<any>(null);
 
+    const seededOffset = useCallback((key: string) => {
+        // deterministic pseudo-random offset so markers don't jump between renders
+        let hash = 0;
+        for (let i = 0; i < key.length; i++) {
+            hash = (hash << 5) - hash + key.charCodeAt(i);
+            hash |= 0;
+        }
+        const normalize = (hash % 1000) / 1000;
+        return (normalize - 0.5) * 2; // -1 to 1
+    }, []);
+
     const markers = useMemo(() => {
         if (!geoJsonData?.features) return null;
 
@@ -25,16 +36,23 @@ export default function MapExplorer({ geoJsonData, onSelectConflict, onLoad }: M
             const [lng, lat] = geometry.coordinates;
             const { id, title, conflict_type, casualties } = properties || {};
 
+            if (lng === undefined || lat === undefined || Number.isNaN(lng) || Number.isNaN(lat)) {
+                return null;
+            }
+
             const color = getConflictTypeColor(conflict_type as ConflictType || "other");
             let size = 10;
             if (casualties && casualties > 10000) size = 14;
             if (casualties && casualties > 100000) size = 20;
 
+            const jitterLng = lng + seededOffset(String(id || index)) * 0.3;
+            const jitterLat = lat + seededOffset(String(title || index + "lat")) * 0.3;
+
             return (
                 <Marker
                     key={`marker-${index}`}
-                    longitude={lng}
-                    latitude={lat}
+                    longitude={jitterLng}
+                    latitude={jitterLat}
                     anchor="center"
                     onClick={(e) => {
                         e.originalEvent.stopPropagation();
@@ -56,7 +74,7 @@ export default function MapExplorer({ geoJsonData, onSelectConflict, onLoad }: M
                 </Marker>
             );
         });
-    }, [geoJsonData, onSelectConflict]);
+    }, [geoJsonData, onSelectConflict, seededOffset]);
 
     return (
         <Map

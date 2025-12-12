@@ -20,13 +20,43 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
 
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...options?.headers,
-        },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    const performFetch = async () =>
+        fetch(url, {
+            ...options,
+            headers: {
+                "Content-Type": "application/json",
+                ...options?.headers,
+            },
+            signal: controller.signal,
+        });
+
+    const maxRetries = options?.method && options.method !== "GET" ? 0 : 2;
+    let attempt = 0;
+    let response: Response | null = null;
+
+    while (attempt <= maxRetries) {
+        try {
+            response = await performFetch();
+            break;
+        } catch (err: any) {
+            attempt += 1;
+            if (attempt > maxRetries) {
+                clearTimeout(timeout);
+                throw new Error(`Network error: ${err?.message || "unknown"}`);
+            }
+            const backoff = 200 * attempt;
+            await new Promise((res) => setTimeout(res, backoff));
+        }
+    }
+
+    clearTimeout(timeout);
+
+    if (!response) {
+        throw new Error("No response received");
+    }
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: "Unknown error" }));

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import LanguageDirectionToggle from "@/components/layout/LanguageDirectionToggle";
 
 const navigation = [
     { name: "Story", href: "/story" },
@@ -40,7 +41,10 @@ export function Header() {
                             </Link>
                         ))}
                     </div>
-                    <ThemeToggle />
+                    <div className="flex items-center gap-3">
+                        <LanguageDirectionToggle />
+                        <ThemeToggle />
+                    </div>
                 </div>
             </nav>
         </header>

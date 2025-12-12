@@ -5,15 +5,25 @@ import * as d3 from "d3";
 import { useQuery } from "@tanstack/react-query";
 import { getTimeline } from "@/lib/api";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/layout/ToastProvider";
 
 export default function TimelineChart() {
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const toast = useToast();
 
-    const { data: timelineData } = useQuery({
+    const { data: timelineData, isLoading, isError, refetch } = useQuery({
         queryKey: ["timeline"],
-        queryFn: () => getTimeline(1000, 2024, "decade"),
+        queryFn: async () => {
+            try {
+                return await getTimeline(1000, 2024, "decade");
+            } catch (err) {
+                console.error("Timeline fetch failed", err);
+                toast("Failed to load timeline data", "error");
+                throw err;
+            }
+        },
     });
 
     // Handle Resize
@@ -56,8 +66,9 @@ export default function TimelineChart() {
 
         // Gradient Definition
         const defs = svg.append("defs");
+        const gradientId = `area-gradient-${Math.floor(Math.random() * 100000)}`;
         const gradient = defs.append("linearGradient")
-            .attr("id", "area-gradient")
+            .attr("id", gradientId)
             .attr("x1", "0%")
             .attr("y1", "0%")
             .attr("x2", "0%")
@@ -83,7 +94,7 @@ export default function TimelineChart() {
         // Draw Area
         g.append("path")
             .datum(timelineData)
-            .attr("fill", "url(#area-gradient)")
+            .attr("fill", `url(#${gradientId})`)
             .attr("d", area)
             .attr("class", "transition-all duration-1000");
 
@@ -146,9 +157,29 @@ export default function TimelineChart() {
                 </div>
             </div>
 
-            <div ref={containerRef} className="w-full h-[300px]">
-                <svg ref={svgRef} width="100%" height="100%" className="overflow-visible" />
-            </div>
+            {isError && (
+                <div className="w-full h-[300px] flex items-center justify-center text-white/50 text-sm">
+                    <div className="space-y-3 text-center">
+                        <p>Failed to load timeline data.</p>
+                        <button
+                            onClick={() => refetch()}
+                            className="px-4 py-2 border border-white/20 text-xs text-white hover:bg-white/5 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            )}
+            {!isError && (
+                <div ref={containerRef} className="w-full h-[300px]">
+                    {isLoading && (
+                        <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">
+                            Loading timeline...
+                        </div>
+                    )}
+                    <svg ref={svgRef} width="100%" height="100%" className="overflow-visible" />
+                </div>
+            )}
         </motion.div>
     );
 }

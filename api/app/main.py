@@ -8,11 +8,28 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+import json
+import time
+import uuid
 
 from .config import get_settings
 from .routers import actors_router, conflicts_router, stats_router
 
 settings = get_settings()
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        traces_sample_rate=0.2,
+        integrations=[FastApiIntegration(), LoggingIntegration(level=None, event_level=None)],
+        environment=settings.sentry_environment,
+        release=settings.sentry_release,
+    )
 
 
 @asynccontextmanager
@@ -44,6 +61,74 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+RATE_LIMIT_MAX = 120  # requests per minute per client
+rate_bucket: dict[str, list[float]] = {}
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Simple in-memory rate limiter with basic request logging."""
+    import time
+
+    client = request.client.host if request.client else "unknown"
+    now = time.time()
+    window_start = now - 60
+
+    bucket = rate_bucket.get(client, [])
+    bucket = [ts for ts in bucket if ts >= window_start]
+
+    if len(bucket) >= RATE_LIMIT_MAX:
+        return JSONResponse({"detail": "Rate limit exceeded"}, status_code=429)
+
+    bucket.append(now)
+    rate_bucket[client] = bucket
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:  # pragma: no cover - defensive logging
+        print(f"API error on {request.url.path}: {exc}")
+        raise
+
+    return response
+
+
+@app.middleware("http")
+async def structured_logging_middleware(request: Request, call_next):
+    """Log request/response metadata as JSON to stdout for Promtail/Loki."""
+    start = time.time()
+    req_id = str(uuid.uuid4())
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        duration = (time.time() - start) * 1000
+        log_line = {
+            "req_id": req_id,
+            "path": request.url.path,
+            "method": request.method,
+            "status": 500,
+            "duration_ms": duration,
+            "ip": request.client.host if request.client else "unknown",
+            "ua": request.headers.get("user-agent"),
+            "error": str(exc),
+            "source": "api",
+        }
+        print(json.dumps(log_line))
+        raise
+
+    duration = (time.time() - start) * 1000
+    log_line = {
+        "req_id": req_id,
+        "path": request.url.path,
+        "method": request.method,
+        "status": response.status_code,
+        "duration_ms": duration,
+        "ip": request.client.host if request.client else "unknown",
+        "ua": request.headers.get("user-agent"),
+        "source": "api",
+    }
+    print(json.dumps(log_line))
+    return response
+
 # Include routers
 app.include_router(conflicts_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
@@ -63,8 +148,14 @@ def root():
 
 @app.get("/health")
 def health_check():
-    """Health check endpoint for container orchestration."""
-    return {"status": "healthy"}
+    """Health check endpoint with DB connectivity."""
+    from .database import SessionLocal
+    try:
+        with SessionLocal() as db:
+            db.execute(text("SELECT 1"))
+        return {"status": "healthy", "db": "ok"}
+    except Exception as exc:
+        return {"status": "degraded", "db": f"error: {exc}"}
 
 
 @app.get("/api")

@@ -16,6 +16,12 @@ const nextConfig = {
     },
     async rewrites() {
         return [
+            // Keep Next.js image proxy route local
+            {
+                source: "/api/images",
+                destination: "/api/images",
+            },
+            // Proxy backend API
             {
                 source: "/api/:path*",
                 destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/:path*`,

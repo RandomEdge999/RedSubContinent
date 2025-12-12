@@ -9,14 +9,29 @@ from sqlalchemy import and_, func, or_, text
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..config import get_settings
 
 router = APIRouter(prefix="/conflicts", tags=["conflicts"])
+settings = get_settings()
+ALLOWED_CONFLICT_TYPES = {
+    "war",
+    "invasion",
+    "massacre",
+    "riot",
+    "famine",
+    "partition_event",
+    "uprising",
+    "imperial_campaign",
+    "civil_conflict",
+    "communal_violence",
+    "other",
+}
 
 
 @router.get("")
 def list_conflicts(
     page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(50, ge=1, le=500, description="Items per page"),
+    page_size: int = Query(50, ge=1, le=settings.max_page_size, description="Items per page"),
     year_start: Optional[int] = Query(None, ge=1000, le=2100),
     year_end: Optional[int] = Query(None, ge=1000, le=2100),
     conflict_type: Optional[list[str]] = Query(None),
@@ -24,7 +39,15 @@ def list_conflicts(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """List all conflicts with optional filtering and pagination."""
-    
+
+    if conflict_type:
+        invalid = [t for t in conflict_type if t not in ALLOWED_CONFLICT_TYPES]
+        if invalid:
+            raise HTTPException(status_code=400, detail=f"Invalid conflict_type values: {', '.join(invalid)}")
+
+    if year_start and year_end and year_start > year_end:
+        raise HTTPException(status_code=400, detail="year_start cannot be greater than year_end")
+
     # Build base query
     conditions = ["1=1"]
     params: dict[str, Any] = {}
@@ -55,7 +78,7 @@ def list_conflicts(
     offset = (page - 1) * page_size
     params["limit"] = page_size
     params["offset"] = offset
-    
+
     sql = text(f"""
         SELECT id, slug, title, conflict_type, start_date, end_date, 
                casualties_best, primary_region

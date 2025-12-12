@@ -1,0 +1,23 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Topographic red gradient">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#210000"/>
+      <stop offset="50%" stop-color="#5c0a0a"/>
+      <stop offset="100%" stop-color="#0a0a0c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#g1)" />
+  <g fill="none" stroke="#ff5555" stroke-width="0.8" opacity="0.35">
+    <path d="M-50 200 Q200 260 450 190 T1200 260" />
+    <path d="M-50 340 Q200 420 520 360 T1200 430" />
+    <path d="M-50 480 Q260 540 540 500 T1200 560" />
+    <path d="M-50 120 Q300 160 520 140 T1200 200" />
+  </g>
+  <g fill="#ff8888" opacity="0.45">
+    <circle cx="180" cy="260" r="8"/>
+    <circle cx="420" cy="190" r="10"/>
+    <circle cx="720" cy="240" r="7"/>
+    <circle cx="980" cy="320" r="9"/>
+    <circle cx="620" cy="520" r="8"/>
+  </g>
+</svg>

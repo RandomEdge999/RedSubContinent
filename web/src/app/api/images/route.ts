@@ -23,7 +23,9 @@ export async function GET(request: Request) {
         // Return the image with proper headers and CORS support
         const headers = new Headers({
             'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=86400', // cache for 1 day
+            'Cache-Control': 'public, max-age=86400, stale-while-revalidate=86400',
+            'CDN-Cache-Control': 'public, max-age=86400, stale-while-revalidate=86400',
+            'Vercel-CDN-Cache-Control': 'public, max-age=86400, stale-while-revalidate=86400',
             'Access-Control-Allow-Origin': '*',
         });
         return new NextResponse(buffer, { status: 200, headers });

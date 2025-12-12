@@ -67,6 +67,9 @@ export const metadata: Metadata = {
             "max-snippet": -1,
         },
     },
+    alternates: {
+        canonical: "/",
+    },
 };
 
 export default function RootLayout({
@@ -75,7 +78,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" dir="ltr" suppressHydrationWarning>
             <body className={`${inter.variable} font-sans`}>
                 <Providers>
                     <div className="min-h-screen flex flex-col">

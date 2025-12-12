@@ -141,10 +141,15 @@ export default function ConflictDetailPage() {
                                 Data Sources
                             </h4>
                             {conflict.sources && conflict.sources.length > 0 ? (
-                                <ul className="space-y-2">
+                                <ul className="space-y-3">
                                     {conflict.sources.map((source, i) => (
-                                        <li key={i} className="text-sm text-white/50 truncate">
-                                            {source.title || source.citation_text || source.url || "Unknown Source"}
+                                        <li key={i} className="text-sm text-white/70">
+                                            <p className="font-medium text-white/90">{source.title || source.citation_text || "Source"}</p>
+                                            {source.url && (
+                                                <a href={source.url} className="text-xs text-[#8b0000] hover:underline" target="_blank" rel="noreferrer">
+                                                    {source.url}
+                                                </a>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -153,6 +158,12 @@ export default function ConflictDetailPage() {
                                     Primary sources pending citation
                                 </p>
                             )}
+                        </div>
+                        <div className="bg-[#8b0000]/10 border border-[#8b0000]/30 p-4 rounded">
+                            <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-2">Content Advisory</p>
+                            <p className="text-sm text-white/70">
+                                This entry may describe violence, famine, or war. Reader discretion advised.
+                            </p>
                         </div>
                     </div>
                 </motion.div>

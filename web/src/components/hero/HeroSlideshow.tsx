@@ -18,6 +18,7 @@ interface HeroSlideshowProps {
 
 export default function HeroSlideshow({ images, interval = 6000, children }: HeroSlideshowProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const blurDataURL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAGgwJ/l0yoywAAAABJRU5ErkJggg==";
 
     // Auto-advance
     useEffect(() => {
@@ -46,6 +47,8 @@ export default function HeroSlideshow({ images, interval = 6000, children }: Her
                             fill
                             className="object-cover grayscale"
                             priority
+                            placeholder="blur"
+                            blurDataURL={blurDataURL}
                         />
                     </motion.div>
                 </AnimatePresence>

@@ -8,6 +8,20 @@ interface KeyMetricsProps {
 }
 
 export default function KeyMetrics({ stats }: KeyMetricsProps) {
+    if (!stats) {
+        return (
+            <div className="grid md:grid-cols-3 gap-6 mb-12">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="relative overflow-hidden rounded-2xl border p-8 backdrop-blur-md border-white/10 bg-white/5">
+                        <div className="h-6 w-24 bg-white/10 mb-2 animate-pulse" />
+                        <div className="h-10 w-32 bg-white/10 mb-2 animate-pulse" />
+                        <div className="h-4 w-20 bg-white/10 animate-pulse" />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     const metrics = [
         {
             label: "Total Events",
