@@ -73,7 +73,7 @@ export default function MapExplorer({ geoJsonData, onSelectConflict, onLoad }: M
                         type: "raster",
                         tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
                         tileSize: 256,
-                        attribution: "© OpenStreetMap contributors, © CARTO",
+                        attribution: "(c) OpenStreetMap contributors, (c) CARTO",
                     },
                 },
                 layers: [

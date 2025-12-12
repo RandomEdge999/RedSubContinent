@@ -13,7 +13,6 @@ type TabType = "table" | "statistics" | "methodology";
 export function DataContainer() {
     const [activeTab, setActiveTab] = useState<TabType>("table");
     const [page, setPage] = useState(1);
-    const [sortBy, setSortBy] = useState<"date" | "casualties">("date");
 
     const { data: conflictsData, isLoading } = useQuery({
         queryKey: ["conflicts", page],
@@ -28,11 +27,6 @@ export function DataContainer() {
     const { data: timeline } = useQuery({
         queryKey: ["timeline-decade"],
         queryFn: () => getTimeline(1900, 2024, "decade"),
-    });
-
-    const { data: centuryData } = useQuery({
-        queryKey: ["timeline-century"],
-        queryFn: () => getTimeline(1000, 2024, "century"),
     });
 
     // Calculate chart data
@@ -202,7 +196,7 @@ export function DataContainer() {
                                                         </span>
                                                     </td>
                                                     <td className="p-4 text-sm text-white/50 max-w-[200px] truncate">
-                                                        {conflict.primary_region || "—"}
+                                                        {conflict.primary_region || "Unknown"}
                                                     </td>
                                                     <td className="p-4 text-right">
                                                         {conflict.casualties_best ? (
@@ -210,7 +204,7 @@ export function DataContainer() {
                                                                 {formatNumber(conflict.casualties_best)}
                                                             </span>
                                                         ) : (
-                                                            <span className="text-sm text-white/20">—</span>
+                                                            <span className="text-sm text-white/20">Unknown</span>
                                                         )}
                                                     </td>
                                                 </tr>

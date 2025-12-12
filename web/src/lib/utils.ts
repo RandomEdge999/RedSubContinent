@@ -18,17 +18,17 @@ export function formatNumber(value: number | null | undefined): string {
 export function formatCasualties(
     low: number | null,
     high: number | null,
-    best: number | null
+    best: number | null | undefined
 ): string {
-    if (best !== null) {
-        if (low !== null && high !== null && low !== high) {
-            return `~${formatNumber(best)} (${formatNumber(low)}–${formatNumber(high)})`;
+    if (best !== null && best !== undefined) {
+        if (low !== null && low !== undefined && high !== null && high !== undefined && low !== high) {
+            return `~${formatNumber(best)} (${formatNumber(low)} - ${formatNumber(high)})`;
         }
         return formatNumber(best);
     }
 
-    if (low !== null && high !== null) {
-        return `${formatNumber(low)}–${formatNumber(high)}`;
+    if (low !== null && low !== undefined && high !== null && high !== undefined) {
+        return `${formatNumber(low)} - ${formatNumber(high)}`;
     }
 
     return "Unknown";
@@ -53,7 +53,7 @@ export function formatDateRange(
 
     if (startYear === endYear) return String(startYear);
 
-    return `${startYear}–${endYear}`;
+    return `${startYear}-${endYear}`;
 }
 
 /**

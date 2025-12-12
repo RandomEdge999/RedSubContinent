@@ -19,10 +19,10 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    print("🚀 Red SubContinent API starting up...")
+    print("Red SubContinent API starting up...")
     yield
     # Shutdown
-    print("👋 Red SubContinent API shutting down...")
+    print("Red SubContinent API shutting down...")
 
 
 # Create FastAPI application
