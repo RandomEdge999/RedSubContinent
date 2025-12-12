@@ -1,0 +1,59 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image, { ImageProps } from "next/image";
+
+import { imageProxyLoader } from "@/app/utils/imageProxyLoader";
+import { fetchExternalImage } from "@/app/utils/fetchExternalImage";
+
+interface ImageWithFallbackProps extends Omit<ImageProps, "loader"> {
+    /** Optional local placeholder image used when no external fallback can be found */
+    fallbackSrc?: string;
+}
+
+export default function ImageWithFallback({
+    src,
+    alt = "",
+    fallbackSrc = "/placeholder.png",
+    className,
+    ...props
+}: ImageWithFallbackProps) {
+    const [currentSrc, setCurrentSrc] = useState<any>(src as any);
+    const [loading, setLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+
+    // Reset when src changes
+    useEffect(() => {
+        setCurrentSrc(src);
+        setLoading(true);
+        setHasError(false);
+    }, [src]);
+
+    const handleError = async () => {
+        // Try to fetch a related image from Wikipedia using the alt text as search term
+        const wikiImg = await fetchExternalImage(alt);
+        if (wikiImg) {
+            setCurrentSrc(wikiImg);
+        } else {
+            setCurrentSrc(fallbackSrc);
+        }
+        setHasError(true);
+        setLoading(false);
+    };
+
+    return (
+        <div className={`relative overflow-hidden ${className ?? ""}`}>
+            <Image
+                {...props}
+                alt={alt}
+                src={currentSrc}
+                loader={hasError ? undefined : imageProxyLoader}
+                className={`transition-all duration-700 ease-in-out ${loading ? "scale-110 blur-xl grayscale" : "scale-100 blur-0 grayscale-0"}`}
+                onLoad={() => setLoading(false)}
+                onError={handleError}
+                unoptimized={hasError}
+            />
+            {loading && <div className="absolute inset-0 bg-white/5 animate-pulse" />}
+        </div>
+    );
+}

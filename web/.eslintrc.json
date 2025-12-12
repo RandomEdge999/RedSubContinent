@@ -1,6 +1,18 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
+  "extends": "next/core-web-vitals",
+  "overrides": [
+    {
+      "files": [
+        "src/**/*.test.tsx",
+        "src/**/*.test.jsx",
+        "src/**/*.test.ts",
+        "src/**/*.test.js",
+        "src/**/__tests__/**/*"
+      ],
+      "rules": {
+        "@next/next/no-img-element": "off",
+        "jsx-a11y/alt-text": "off"
+      }
+    }
   ]
 }

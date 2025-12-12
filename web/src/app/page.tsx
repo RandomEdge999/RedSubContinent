@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getStatsSummary } from "@/lib/api";
-import StatsChart from "@/components/StatsChart";
+import KeyMetrics from "@/components/KeyMetrics";
+import TimelineChart from "@/components/TimelineChart";
+import HeroSlideshow from "@/components/hero/HeroSlideshow";
+// import Image from "next/image"; // restore Image for test
 
 // High-quality historical images for slideshow
 const SLIDESHOW_IMAGES = [
@@ -37,147 +39,67 @@ const SLIDESHOW_IMAGES = [
 ];
 
 export default function HomePage() {
-    const [currentSlide, setCurrentSlide] = useState(0);
-
-    // Auto-advance slideshow
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
-        }, 6000);
-        return () => clearInterval(timer);
-    }, []);
     const { data: stats } = useQuery({ queryKey: ["stats-summary"], queryFn: getStatsSummary });
+    // const stats = null; // Mock stats for now
 
     return (
         <div className="min-h-screen bg-[#0a0a0c]">
             {/* Hero Section with Slideshow */}
-            <section className="h-screen flex flex-col items-center justify-center relative overflow-hidden">
-                {/* Background slideshow */}
-                <div className="absolute inset-0">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentSlide}
-                            initial={{ opacity: 0, scale: 1.1 }}
-                            animate={{ opacity: 0.3, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 2 }}
-                            className="absolute inset-0"
-                        >
-                            <img
-                                src={SLIDESHOW_IMAGES[currentSlide].src}
-                                alt={SLIDESHOW_IMAGES[currentSlide].alt}
-                                className="w-full h-full object-cover grayscale"
-                            />
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
+            <HeroSlideshow images={SLIDESHOW_IMAGES}>
+                {/* Caption */}
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-[10px] uppercase tracking-[0.5em] text-white/40 mb-10"
+                >
+                    A Visual History
+                </motion.p>
 
-                {/* Dark overlays */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0c] via-[#0a0a0c]/70 to-[#0a0a0c]" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-transparent to-[#0a0a0c]" />
+                {/* Title */}
+                <motion.h1
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 1 }}
+                    className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-tight mb-4"
+                >
+                    The Conflicts of
+                </motion.h1>
+                <motion.h1
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9, duration: 1 }}
+                    className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-tight text-[#8b0000] mb-10"
+                >
+                    South Asia
+                </motion.h1>
 
-                {/* Vignette */}
-                <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.9)]" />
-
-                {/* Content */}
-                <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-                    {/* Caption */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="text-[10px] uppercase tracking-[0.5em] text-white/40 mb-10"
-                    >
-                        A Visual History
-                    </motion.p>
-
-                    {/* Title */}
-                    <motion.h1
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7, duration: 1 }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-tight mb-4"
-                    >
-                        The Conflicts of
-                    </motion.h1>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.9, duration: 1 }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-tight text-[#8b0000] mb-10"
-                    >
-                        South Asia
-                    </motion.h1>
-
-                    {/* Subtitle */}
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1.2 }}
-                        className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-12 leading-relaxed"
-                    >
-                        One thousand years of wars, invasions, famines, and resistance.
-                        <br />
-                        Documented with care. Visualized with precision.
-                    </motion.p>
-
-                    {/* CTA */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1.5 }}
-                    >
-                        <Link
-                            href="/story"
-                            className="inline-block px-12 py-5 bg-[#8b0000] text-white text-lg font-light tracking-wide hover:bg-[#a00000] transition-all duration-500 hover:px-16"
-                        >
-                            Begin Journey
-                        </Link>
-                    </motion.div>
-
-                    {/* Slide indicator with caption */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 2 }}
-                        className="mt-16"
-                    >
-                        <AnimatePresence mode="wait">
-                            <motion.p
-                                key={currentSlide}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="text-xs text-white/30 mb-4"
-                            >
-                                {SLIDESHOW_IMAGES[currentSlide].caption}
-                            </motion.p>
-                        </AnimatePresence>
-                        <div className="flex justify-center gap-2">
-                            {SLIDESHOW_IMAGES.map((_, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setCurrentSlide(index)}
-                                    className={`w-8 h-1 transition-all duration-500 ${index === currentSlide
-                                        ? "bg-[#8b0000]"
-                                        : "bg-white/20 hover:bg-white/40"
-                                        }`}
-                                />
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Scroll indicator */}
-                <motion.div
+                {/* Subtitle */}
+                <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 2.5 }}
-                    className="absolute bottom-12 left-1/2 -translate-x-1/2"
+                    transition={{ delay: 1.2 }}
+                    className="text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-12 leading-relaxed"
                 >
-                    <div className="w-px h-20 bg-gradient-to-b from-white/30 to-transparent animate-pulse" />
+                    One thousand years of wars, invasions, famines, and resistance.
+                    <br />
+                    Documented with care. Visualized with precision.
+                </motion.p>
+
+                {/* CTA */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.5 }}
+                >
+                    <Link
+                        href="/story"
+                        className="inline-block px-12 py-5 bg-[#8b0000] text-white text-lg font-light tracking-wide hover:bg-[#a00000] transition-all duration-500 hover:px-16"
+                    >
+                        Begin Journey
+                    </Link>
                 </motion.div>
-            </section>
+            </HeroSlideshow>
 
             {/* Content Warning */}
             <section className="py-24 border-t border-white/5">
@@ -267,15 +189,17 @@ export default function HomePage() {
             </section>
 
             {/* Stats */}
-            <section className="py-32 border-t border-white/5">
-                <div className="container mx-auto px-6 lg:px-12 max-w-4xl">
-                    {stats && (
-                        <StatsChart data={[
-                            { label: "Events Documented", value: stats.total_conflicts },
-                            { label: "Lives Lost (M)", value: Math.round((stats.total_casualties_best || 0) / 1000000) },
-                            { label: "Years Covered", value: 1024 },
-                        ]} />
-                    )}
+            <section className="py-32 border-t border-white/5 bg-[#0a0a0c]">
+                <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
+                    <div className="text-center mb-16">
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-white/30 mb-4">By The Numbers</p>
+                        <h2 className="text-4xl lg:text-5xl font-extralight text-white">
+                            A Millennium of <span className="text-[#8b0000]">Conflict</span>
+                        </h2>
+                    </div>
+
+                    {stats && <KeyMetrics stats={stats} />}
+                    <TimelineChart />
                 </div>
             </section>
 

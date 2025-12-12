@@ -81,6 +81,7 @@ export interface ConflictListItem {
 
 // Full conflict detail
 export interface ConflictDetail extends ConflictListItem {
+    description?: string | null;
     description_short: string | null;
     description_long: string | null;
     date_precision: string;

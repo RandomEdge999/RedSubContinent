@@ -11,6 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"),
     title: {
         default: "Red SubContinent",
         template: "%s | Red SubContinent",
@@ -27,14 +28,44 @@ export const metadata: Metadata = {
         "Pakistan",
         "Bangladesh",
         "Afghanistan",
+        "Mughals",
+        "British Raj",
+        "Partition",
     ],
     authors: [{ name: "Red SubContinent Project" }],
     openGraph: {
         title: "Red SubContinent",
         description:
             "Interactive historical visualization of South Asian conflicts from 1000 CE to present.",
-        type: "website",
+        url: "/",
+        siteName: "Red SubContinent",
+        images: [
+            {
+                url: "/og-image.jpg", // We'll need to ensure this exists or use a generic one
+                width: 1200,
+                height: 630,
+                alt: "Red SubContinent - A Thouand Years of Conflict",
+            },
+        ],
         locale: "en_US",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Red SubContinent",
+        description: "A visual journey through 1000 years of South Asian history.",
+        images: ["/og-image.jpg"],
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+        },
     },
 };
 

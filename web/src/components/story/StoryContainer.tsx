@@ -3,6 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import { imageProxyLoader } from "@/app/utils/imageProxyLoader";
+
+import { TimelineNav } from "./TimelineNav";
+import TimelineIndicator from "./TimelineIndicator";
+import ImageWithFallback from "../ImageWithFallback";
 
 import { getTimeline, getStatsSummary } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
@@ -173,65 +179,32 @@ export function StoryContainer() {
     return (
         <div ref={containerRef} className="bg-[#0a0a0c] min-h-screen">
             {/* FIXED: Timeline navigation - LEFT SIDE - Perfect vertical alignment */}
-            <nav
-                className="hidden lg:flex fixed left-8 top-1/2 z-50 flex-col items-center gap-0"
-                style={{ transform: "translateY(-50%)" }}
-            >
-                {/* Vertical line behind dots */}
-                <div
-                    className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10"
-                    style={{ transform: "translateX(-50%)" }}
-                />
+            {/* FIXED: Timeline navigation - LEFT SIDE - Perfect vertical alignment */}
+            {/* Refined Timeline Navigation */}
+            <TimelineNav
+                chapters={chapters.map(c => ({ id: c.id, era: c.era }))}
+                activeChapter={activeChapter}
+                onChapterClick={scrollToChapter}
+            />
 
-                {chapters.map((chapter, index) => (
-                    <button
-                        key={chapter.id}
-                        onClick={() => scrollToChapter(index)}
-                        className="relative group flex items-center py-3"
-                        title={chapter.era}
-                    >
-                        {/* The dot - perfectly round, never square */}
-                        <div
-                            className={`
-                relative z-10 rounded-full transition-all duration-500 ease-out
-                ${activeChapter === index
-                                    ? "w-4 h-4 bg-[#8b0000] shadow-[0_0_20px_rgba(139,0,0,0.8)]"
-                                    : "w-2.5 h-2.5 bg-white/20 group-hover:bg-white/40 group-hover:scale-125"
-                                }
-              `}
-                            style={{
-                                borderRadius: "50%",
-                                aspectRatio: "1/1",
-                            }}
-                        />
+            {/* NEW: Visual Timeline Indicator - RIGHT SIDE */}
+            <TimelineIndicator
+                totalSteps={chapters.length}
+                currentStep={activeChapter}
+                onStepClick={scrollToChapter}
+            />
 
-                        {/* Era label - appears on hover or when active */}
-                        <span
-                            className={`
-                ml-4 text-xs font-medium whitespace-nowrap transition-all duration-300
-                ${activeChapter === index
-                                    ? "opacity-100 text-white translate-x-0"
-                                    : "opacity-0 group-hover:opacity-80 text-white/60 -translate-x-2 group-hover:translate-x-0"
-                                }
-              `}
-                        >
-                            {chapter.era}
-                        </span>
-                    </button>
-                ))}
-            </nav>
-
-            {/* Era indicator - RIGHT SIDE */}
-            <aside className="hidden lg:block fixed right-8 top-1/2 z-40" style={{ transform: "translateY(-50%)" }}>
+            {/* Era indicator - RIGHT SIDE - Bottom aligned */}
+            <aside className="hidden lg:block fixed right-8 bottom-8 z-40">
                 <div className="text-right">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 mb-2">Era</p>
                     <AnimatePresence mode="wait">
                         <motion.p
                             key={activeChapter}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-3xl font-light text-[#8b0000]"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="text-4xl font-light text-[#8b0000]"
                         >
                             {chapters[activeChapter]?.era}
                         </motion.p>
@@ -343,18 +316,16 @@ export function StoryContainer() {
                             {/* Image */}
                             {image && (
                                 <div className="relative mb-12 overflow-hidden rounded-sm aspect-video bg-white/5">
-                                    <img
+                                    <ImageWithFallback
                                         src={image.url}
                                         alt={image.alt}
-                                        className="w-full h-full object-cover opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+                                        fill
+                                        className="object-cover opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         loading="lazy"
-                                        onError={(e) => {
-                                            // Fallback to gradient if image fails
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = "none";
-                                        }}
+                                        fallbackSrc="/placeholder.png"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-[#0a0a0c]/30" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-[#0a0a0c]/30 pointer-events-none" />
                                 </div>
                             )}
 

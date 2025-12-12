@@ -131,8 +131,8 @@ export function DataContainer() {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-8 py-5 text-sm font-medium transition-all relative ${activeTab === tab
-                                        ? "text-white bg-white/[0.02]"
-                                        : "text-white/40 hover:text-white/60 hover:bg-white/[0.01]"
+                                    ? "text-white bg-white/[0.02]"
+                                    : "text-white/40 hover:text-white/60 hover:bg-white/[0.01]"
                                     }`}
                             >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -365,7 +365,7 @@ export function DataContainer() {
                                 <h3 className="text-lg font-light text-white/80 mt-8 mb-4">Casualty Estimates</h3>
                                 <p className="text-white/50 leading-relaxed mb-4">
                                     Historical casualty figures are inherently uncertain. Where possible, we provide
-                                    ranges (low, high, best estimate). The "best estimate" is typically the median
+                                    ranges (low, high, best estimate). The &quot;best estimate&quot; is typically the median
                                     of credible sources or the most commonly cited figure.
                                 </p>
 
